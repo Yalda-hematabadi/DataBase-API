@@ -1,0 +1,72 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>API Frontend</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='styles.css') }}">
+</head>
+<body>
+    <h1>API Frontend</h1>
+    
+    <form id="queryForm">
+        <label for="sqlQuery">SQL Query:</label>
+        <textarea id="sqlQuery" name="sqlQuery" rows="4" cols="50"></textarea>
+        <br>
+        <button type="button" onclick="executeQuery()">Execute Query</button>
+    </form>
+
+    <h2>Query Result:</h2>
+    <table id="resultTable" border="1">
+        <!-- Table headers will be dynamically generated -->
+    </table>
+
+    <script>
+        function executeQuery() {
+            var query = document.getElementById("sqlQuery").value;
+
+            // Send a POST request to the API
+            fetch('/ai_paper', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify({ sql_query: query }),
+            })
+            .then(response => response.json())
+            .then(data => {
+                // Display the result in the table
+                var table = document.getElementById("resultTable");
+                table.innerHTML = "";
+
+                if (data.length > 0) {
+                    var headerRow = table.insertRow(0);
+
+                    // Create table headers based on the keys in the first result
+                    for (var key in data[0]) {
+                        var headerCell = headerRow.insertCell(-1);
+                        headerCell.textContent = key;
+                    }
+
+                    // Populate the table with data
+                    data.forEach(function (row) {
+                        var newRow = table.insertRow(-1);
+
+                        for (var key in row) {
+                            var cell = newRow.insertCell(-1);
+                            cell.textContent = row[key];
+                        }
+                    });
+                } else {
+                    var messageRow = table.insertRow(0);
+                    var messageCell = messageRow.insertCell(-1);
+                    messageCell.textContent = "No results";
+                }
+            })
+            .catch(error => {
+                console.error('Error:', error);
+            });
+        }
+    </script>
+</body>
+</html>

@@ -1,12 +1,12 @@
 import psycopg2
-from flask import Flask, request, jsonify
+from flask import Flask, request, jsonify, render_template
 
-app = Flask(__name__)
+app = Flask(__name__, static_url_path='/static')
 
 db_params = {
     "dbname": "ai paper",
     "user": "postgres",
-    "password": "XXXXX",
+    "password": "8912",
     "host": "localhost",
     "port": "5432",
 }
@@ -14,8 +14,8 @@ db_params = {
 conn = psycopg2.connect(**db_params)
 
 @app.route('/')
-def home():
-    return "Hello, World!"
+def index():
+    return render_template('index.html')
 
 @app.route('/ai_paper', methods=['POST'])
 def execute_query():
