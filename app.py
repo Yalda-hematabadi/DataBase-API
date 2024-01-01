@@ -1,4 +1,5 @@
 import psycopg2
+from psycopg2 import pool
 from flask import Flask, request, jsonify, render_template
 
 app = Flask(__name__, static_url_path='/static')
@@ -6,12 +7,15 @@ app = Flask(__name__, static_url_path='/static')
 db_params = {
     "dbname": "ai paper",
     "user": "postgres",
-    "password": "8912",
+    "password": "XXXXXX",
     "host": "localhost",
     "port": "5432",
 }
 
-conn = psycopg2.connect(**db_params)
+connection_pool = psycopg2.pool.SimpleConnectionPool(1, 10, **db_params)
+
+def get_connection():
+    return connection_pool.getconn()
 
 @app.route('/')
 def index():
@@ -29,6 +33,7 @@ def execute_query():
             resp.status_code = 400
             return resp
 
+        conn = get_connection()
         cursor = conn.cursor()
         cursor.execute(sql_query)
 
@@ -50,7 +55,7 @@ def execute_query():
     finally:
         if cursor is not None:
             cursor.close()
-        conn.close()
+            connection_pool.putconn(conn)
 
 if __name__ == "__main__":
     app.run(debug=True)
